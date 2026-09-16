@@ -1,0 +1,59 @@
+@import url('https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Big Shoulders Display", sans-serif;
+  --font-sans: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --color-ink: #0b1f33;
+  --color-ink-800: #142c46;
+  --color-ink-700: #1d3a5c;
+  --color-ink-mid: #4b5a6b;
+  --color-paper: #f7f7f4;
+  --color-paper-dim: #eeede6;
+  --color-line: #d9dbd4;
+  --color-line-dark: #2a3d54;
+  --color-cargo: #d9631f;
+  --color-cargo-dark: #b6511a;
+  --color-sea: #2c6e8c;
+  --color-sea-dark: #21536b;
+  --color-success: #2f7d52;
+  --color-warning: #b8860b;
+  --color-danger: #b23b2e;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background: var(--color-cargo);
+    color: white;
+  }
+  *:focus-visible {
+    outline: 2px solid var(--color-cargo);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+  .container-page {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}

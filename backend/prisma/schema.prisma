@@ -1,0 +1,280 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  STAFF
+}
+
+enum RequestType {
+  IMPORT
+  EXPORT
+}
+
+enum RequestStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum ShipmentStatus {
+  PENDING
+  CONFIRMED
+  CARGO_RECEIVED
+  IN_TRANSIT
+  CUSTOMS_CLEARANCE
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum TransportMethod {
+  SEA
+  AIR
+  ROAD
+  RAIL
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingType {
+  CONSULTATION
+  IMPORT_INQUIRY
+  EXPORT_INQUIRY
+  GENERAL_INQUIRY
+}
+
+
+// ============================================================
+// USER
+// ============================================================
+
+model User {
+  id        String   @id @default(uuid())
+  supabaseId String   @unique
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  role      UserRole @default(CUSTOMER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company         Company?
+  requests        TradeRequest[]
+  shipments       Shipment[]
+  bookings        Booking[]
+  contactMessages ContactMessages[]
+
+  @@index([email])
+}
+model Booking {
+  id String @id @default(uuid())
+
+  // Customer information
+  name         String
+  email        String
+  phone        String?
+  companyName  String?
+
+  // Booking information
+  type         BookingType
+  preferredDate DateTime
+  preferredTime String
+  timezone      String?
+
+  // Additional information
+  message String?
+
+  // Booking management
+  status BookingStatus @default(PENDING)
+
+  // If the person is a registered user,
+  // connect the booking to their account.
+  userId String?
+  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@index([preferredDate])
+} 
+
+
+
+
+model ContactMessages {
+  id String @id @default(uuid())
+
+  name    String
+  email   String
+  subject String
+  message String
+
+  userId String?
+  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+
+
+
+// ============================================================
+// COMPANY
+// ============================================================
+
+model Company {
+  id                 String   @id @default(uuid())
+  name               String
+  registrationNumber String?  @unique
+  email              String?
+  phone              String?
+  address            String?
+  city               String?
+  state              String?
+  country            String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+// ============================================================
+// IMPORT / EXPORT REQUEST
+// ============================================================
+
+model TradeRequest {
+  id String @id @default(uuid())
+
+  type RequestType
+
+  title       String
+  description String?
+
+  cargoDescription String
+  quantity         Float?
+  quantityUnit     String?
+
+  originCountry      String
+  originCity         String?
+  destinationCountry String
+  destinationCity    String?
+
+  transportMethod TransportMethod?
+
+  status RequestStatus @default(PENDING)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  shipment Shipment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+}
+
+
+// ============================================================
+// SHIPMENT
+// ============================================================
+
+model Shipment {
+  id String @id @default(uuid())
+
+  trackingNumber String @unique
+
+  status ShipmentStatus @default(PENDING)
+
+  originCountry      String
+  originCity         String?
+  destinationCountry String
+  destinationCity    String?
+
+  transportMethod TransportMethod?
+
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+
+  cargoDescription String?
+  weight           Float?
+  weightUnit       String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  requestId String?       @unique
+  request   TradeRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  trackingEvents TrackingEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+
+// ============================================================
+// TRACKING EVENT
+// ============================================================
+
+model TrackingEvent {
+  id String @id @default(uuid())
+
+  status ShipmentStatus
+
+  location    String
+  description String?
+
+  timestamp DateTime @default(now())
+
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([shipmentId])
+  @@index([timestamp])
+}
+
+
+// ============================================================
+// BOOKING / CALL REQUEST
+// ===============
+
