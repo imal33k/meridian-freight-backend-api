@@ -13,6 +13,9 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleDestroy
 {
+  findMany(arg0: { where: { userId: string; }; orderBy: { createdAt: string; }; }) {
+    throw new Error('Method not implemented.');
+  }
   private readonly logger = new Logger(PrismaService.name);
 
   constructor(

@@ -215,17 +215,18 @@ model TradeRequest {
 
 model Shipment {
   id String @id @default(uuid())
-
+  shipmentType    String
   trackingNumber String @unique
-
+  description    String
   status ShipmentStatus @default(PENDING)
+  goodsType        String
 
   originCountry      String
   originCity         String?
   destinationCountry String
   destinationCity    String?
 
-  transportMethod TransportMethod?
+  transportMethod     String?
 
   estimatedDelivery DateTime?
   actualDelivery    DateTime?
@@ -240,6 +241,7 @@ model Shipment {
   requestId String?       @unique
   request   TradeRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
 
+  requestReference  String @unique
   trackingEvents TrackingEvent[]
 
   createdAt DateTime @default(now())
