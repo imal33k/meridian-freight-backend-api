@@ -90,11 +90,7 @@ export default function LoginPage() {
         <Button type="submit" size="lg" fullWidth disabled={status === 'submitting'}>
           {status === 'submitting' ? 'Logging in…' : 'Log in'}
         </Button>
-        <p className="rounded-sm bg-paper-dim px-4 py-3 text-xs text-ink-mid">
-          Demo: use <span className="font-mono">adaeze.okonkwo@lagosfoodsexports.com</span> for a customer
-          account or <span className="font-mono">michael.adeyemi@meridianfreight.com</span> for staff access,
-          with any password.
-        </p>
+       
       </form>
       <p className="mt-8 text-sm text-ink-mid">
         Don't have an account?{' '}

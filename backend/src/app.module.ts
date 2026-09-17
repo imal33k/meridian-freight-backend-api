@@ -5,6 +5,7 @@ import { SupabaseModule } from './supabase/supabase.module';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './database/prisma.module';
 import { ShipmentModule } from './shipment/shipment.module';
+import { TrackingEventModule } from './tracking-event/tracking-event.module';
 
 
 @Module({
@@ -15,6 +16,7 @@ import { ShipmentModule } from './shipment/shipment.module';
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     PrismaModule,
     ShipmentModule,
+    TrackingEventModule,
   ],
 })
 export class AppModule {}

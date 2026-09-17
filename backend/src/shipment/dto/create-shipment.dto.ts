@@ -1,4 +1,5 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber,  } from "class-validator";
+import { RequestType } from "@prisma/client";
+import { IsEnum,IsString, IsNotEmpty, IsOptional, IsNumber,  } from "class-validator";
 
 
 export class CreateShipmentDto {
@@ -6,6 +7,9 @@ export class CreateShipmentDto {
     @IsString()
     @IsNotEmpty()
     shipmentType!: string;
+
+    @IsEnum(RequestType)
+    requestType!: RequestType;
 
     @IsString()
     @IsNotEmpty()
