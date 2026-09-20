@@ -20,6 +20,8 @@ export class CreateShipmentDto {
     destinationCountry!: string;
 
     @IsString()
+
+
     @IsOptional()
     originCity?: string
 

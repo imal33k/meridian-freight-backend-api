@@ -6,8 +6,7 @@ import { PrismaService } from '../database/prisma.service';
 
 @Injectable()
 export class ShipmentService {
-
-  constructor(private readonly prisma: PrismaService, private readonly supabaseservice:SupabaseService){}
+constructor(private readonly prisma: PrismaService, private readonly supabaseservice:SupabaseService){}
 
 
 async create(dto: CreateShipmentDto, userId: string){
@@ -25,7 +24,8 @@ async create(dto: CreateShipmentDto, userId: string){
         
     } = dto;
 
-    return this.prisma.shipment.create({
+    return this.prisma.$transaction(async(tx) => {
+      const shipment = await tx.shipment.create({
         data: {
         shipmentType,
         originCountry,
@@ -42,6 +42,16 @@ async create(dto: CreateShipmentDto, userId: string){
         user: { connect: { id: userId } },
         },
     });
+
+    await tx.trackingEvent.create({
+      data: { status: shipment.status,
+        location: originCountry,
+        description: ' shipment created',
+        shipmentId: shipment.id,
+      }
+    });
+    return shipment;
+  });
 }
 
 async findMyShipment(userId: string){
