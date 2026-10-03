@@ -1,0 +1,389 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  STAFF
+}
+
+enum RequestType {
+  IMPORT
+  EXPORT
+}
+
+enum RequestStatus {
+  PENDING
+  UNDER_REVIEW
+  QUOTE_PROVIDED
+  ACCEPTED
+  BOOKED
+  REJECTED
+  CANCELLED
+  ON_HOLD
+}
+
+enum ShipmentStatus {
+  BOOKED
+  SHIPMENT_CREATED
+  IN_TRANSIT
+  CUSTOMS
+  OUT_FOR_DELIVERY
+  DELIVERED
+  ON_HOLD
+  CANCELLED
+}
+
+enum TransportMethod {
+  SEA
+  AIR
+  ROAD
+  RAIL
+}
+
+enum DocumentType {
+  COMMERCIAL_INVOICE
+  PACKING_LIST
+  BILL_OF_LADING
+  CUSTOMS_DOCUMENT
+  PROOF_OF_DELIVERY
+  OTHER
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  RESPONDED
+}
+
+enum NotificationType {
+  SHIPMENT_PICKED_UP
+  SHIPMENT_DEPARTED
+  SHIPMENT_ARRIVED
+  CUSTOMS_CLEARANCE
+  SHIPMENT_DELIVERED
+  QUOTE_READY
+  REQUEST_UPDATE
+  SYSTEM
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingType {
+  EXPORT_CONSULTATION
+  IMPORT_CONSULTATION
+  FREIGHT_QUOTE
+  CUSTOMS_SUPPORT
+  GENERAL_ENQUIRY
+}
+
+// ============================================================
+// USER
+// ============================================================
+
+model User {
+  id         String   @id @default(uuid())
+  supabaseId String   @unique
+  email      String   @unique
+  firstName  String
+  lastName   String
+  phone      String?
+  role       UserRole @default(CUSTOMER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company         Company?
+  requests        TradeRequest[]
+  shipments       Shipment[]
+  bookings        Booking[]
+  contactMessages ContactMessages[]
+  notifications   Notification[]
+
+  @@index([email])
+}
+
+model Booking {
+  id String @id @default(uuid())
+
+  // Customer information
+  name        String
+  email       String
+  phone       String?
+  companyName String?
+
+  // Booking information
+  type          BookingType
+  preferredDate DateTime
+  preferredTime String
+  timezone      String?
+
+  // Additional information
+  message String?
+
+  // Booking management
+  status BookingStatus @default(PENDING)
+
+  // If the person is a registered user,
+  // connect the booking to their account.
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([email])
+  @@index([status])
+  @@index([preferredDate])
+}
+
+model ContactMessages {
+  id String @id @default(uuid())
+
+  name    String
+  email   String
+  phone   String?
+  company String?
+  subject String
+  message String
+  status  ContactStatus @default(NEW)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ============================================================
+// COMPANY
+// ============================================================
+
+model Company {
+  id                 String  @id @default(uuid())
+  name               String
+  registrationNumber String? @unique
+  email              String?
+  phone              String?
+  address            String?
+  city               String?
+  state              String?
+  country            String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
+// IMPORT / EXPORT REQUEST
+// ============================================================
+
+model TradeRequest {
+  id String @id @default(uuid())
+
+  reference String @unique // e.g. REQ-2026-004127
+
+  type RequestType
+
+  title       String
+  description String?
+
+  cargoDescription String
+  quantity         Float?
+  quantityUnit     String?
+  quantityText     String? // free text as entered, e.g. "240 cartons"
+
+  originCountry      String
+  originCity         String?
+  destinationCountry String
+  destinationCity    String?
+
+  transportMethod TransportMethod?
+
+  goodsType       String?
+  weightKg        Float?
+  dimensions      String?
+  pickupAddress   String?
+  deliveryAddress String?
+  additionalInfo  String?
+
+  quoteAmount   Float?
+  quoteCurrency String?
+  quoteNotes    String?
+
+  status RequestStatus @default(PENDING)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  shipment Shipment?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+}
+
+// ============================================================
+// SHIPMENT
+// ============================================================
+
+model Shipment {
+  id             String         @id @default(uuid())
+  shipmentType   RequestType
+  trackingNumber String         @unique
+  description    String
+  status         ShipmentStatus @default(BOOKED)
+  goodsType      String
+
+  originCountry      String
+  originCity         String?
+  destinationCountry String
+  destinationCity    String?
+
+  transportMethod TransportMethod?
+
+  estimatedDelivery DateTime?
+  actualDelivery    DateTime?
+
+  carrier         String?
+  containerNumber String?
+  billOfLading    String?
+  airWaybill      String?
+
+  cargoDescription String?
+  weight           Float?
+  weightUnit       String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  requestId String?       @unique
+  request   TradeRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  requestReference String             @unique
+  trackingEvents   TrackingEvent[]
+  documents        ShipmentDocument[]
+  items            ShipmentItem[]
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model ShipmentItem {
+  id String @id @default(uuid())
+
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  description String
+  quantity    Int     @default(1)
+  packageType String?
+
+  weight     Float?
+  weightUnit String?
+
+  length Float?
+  width  Float?
+  height Float?
+
+  value    Float?
+  currency String?
+
+  hsCode String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shipmentId])
+}
+
+// ============================================================
+// TRACKING EVENT
+// ============================================================
+
+model TrackingEvent {
+  id String @id @default(uuid())
+
+  title  String // label shown on the timeline, e.g. "Departed origin port"
+  status ShipmentStatus? // set only when this event also moves the shipment to a new status
+
+  location    String
+  description String?
+
+  timestamp DateTime @default(now())
+
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([shipmentId])
+  @@index([timestamp])
+}
+
+// ============================================================
+// SHIPMENT DOCUMENT (metadata only - no file storage yet)
+// ============================================================
+
+model ShipmentDocument {
+  id String @id @default(uuid())
+
+  name       String
+  type       DocumentType @default(OTHER)
+  sizeLabel  String?
+  restricted Boolean      @default(false) // true = staff only
+
+  shipmentId String
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  uploadedAt DateTime @default(now())
+
+  @@index([shipmentId])
+}
+
+// ============================================================
+// NOTIFICATION
+// ============================================================
+
+model Notification {
+  id String @id @default(uuid())
+
+  type              NotificationType @default(SYSTEM)
+  title             String
+  message           String
+  shipmentReference String?
+  read              Boolean          @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([createdAt])
+}
