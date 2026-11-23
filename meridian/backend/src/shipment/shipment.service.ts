@@ -10,7 +10,7 @@ import { CreateDocumentDto } from './dto/create-document.dto';
 import type { RequestUser } from '../auth/decorators/current-user.decorator';
 import { STAFF_ROLES } from '../common/roles';
 import { ShipmentQueryDto } from './dto/shipment-query.dto';
-
+import { randomBytes } from 'crypto';
 // Everything the app needs to render a shipment: owner name, timeline and documents.
 const baseInclude = {
   user: {
@@ -43,7 +43,7 @@ export class ShipmentService {
 
   private trackingNumberFor(type: RequestType): string {
     const prefix = type === 'EXPORT' ? 'EXP' : 'IMP';
-    return `${prefix}-${new Date().getFullYear()}-${String(randomInt(0, 1_000_000)).padStart(6, '0')}`;
+    return `${prefix}-${new Date().getFullYear()}-${randomBytes(5).toString('hex').toUpperCase()}`;
   }
 
   private isUniqueClash(err: unknown): boolean {

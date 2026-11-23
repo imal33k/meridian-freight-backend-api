@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { NotificationType } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { Resend } from 'resend'
+import { escapeHtml } from '../common/escape-html';
 
 export interface NotifyInput {
   type: NotificationType;
@@ -57,15 +58,15 @@ export class NotificationsService {private readonly resend: Resend;
         to: user.email,
         subject: input.title,
         html: `
-          <h2>${input.title}</h2>
+          <h2>${escapeHtml(input.title)}</h2>
 
-          <p>Hello ${user.firstName},</p>
+          <p>Hello ${escapeHtml(user.firstName)},</p>
 
-          <p>${input.message}</p>
+          <p>${escapeHtml(input.message)}</p>
 
           ${
             input.shipmentReference
-              ? `<p><strong>Shipment:</strong> ${input.shipmentReference}</p>`
+              ? `<p><strong>Shipment:</strong> ${escapeHtml(input.shipmentReference)}</p>`
               : ''
           }
 

@@ -4,6 +4,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 import { RequestUser } from '../auth/decorators/current-user.decorator';
+import { escapeHtml } from '../common/escape-html';
 
 @Injectable()
 export class ContactService {
@@ -14,7 +15,7 @@ export class ContactService {
 
   async create(dto: CreateContactDto, user?: RequestUser) {
     const contact = await this.prisma.contactMessages.create({
-      ...dto, userId: user?.id,
+      data:{...dto, userId: user?.id}
     });
 
     await this.notifications.sendEmail(
@@ -23,7 +24,7 @@ export class ContactService {
       `
         <h2>Message Received</h2>
 
-        <p>Hello ${contact.name},</p>
+        <p>Hello ${escapeHtml(contact.name)},</p>
 
         <p>
           Thank you for contacting Meridian Freight.
@@ -31,7 +32,7 @@ export class ContactService {
         </p>
 
         <p>
-          <strong>Subject:</strong> ${contact.subject}
+          <strong>Subject:</strong> ${escapeHtml(contact.subject)}
         </p>
 
         <p>
@@ -49,14 +50,14 @@ export class ContactService {
 
     <p>A new contact message has been submitted.</p>
 
-    <p><strong>Name:</strong> ${contact.name}</p>
-    <p><strong>Email:</strong> ${contact.email}</p>
-    <p><strong>Phone:</strong> ${contact.phone ?? 'Not provided'}</p>
-    <p><strong>Company:</strong> ${contact.company ?? 'Not provided'}</p>
-    <p><strong>Subject:</strong> ${contact.subject}</p>
+    <p><strong>Name:</strong> ${escapeHtml(contact.name)}</p>
+    <p><strong>Email:</strong> ${escapeHtml(contact.email)}</p>
+    <p><strong>Phone:</strong> ${escapeHtml(contact.phone ?? 'Not provided')}</p>
+    <p><strong>Company:</strong> ${escapeHtml(contact.company ?? 'Not provided')}</p>
+    <p><strong>Subject:</strong> ${escapeHtml(contact.subject)}</p>
 
     <p><strong>Message:</strong></p>
-    <p>${contact.message}</p>
+    <p>${escapeHtml(contact.message)}</p>
 
     <p>Please log in to the admin dashboard to review this message.</p>
 

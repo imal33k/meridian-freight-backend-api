@@ -4,7 +4,7 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { RequestUser } from '../auth/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
-
+import { escapeHtml } from '../common/escape-html';
 
 @Injectable()
 export class BookingService {
@@ -26,14 +26,14 @@ export class BookingService {
     `
       <h2>Booking Request Received</h2>
 
-      <p>Hello ${booking.name},</p>
+      <p>Hello ${escapeHtml(booking.name)},</p>
 
       <p>
         We have received your request to book a call with Meridian Freight.
       </p>
 
       <p>
-        <strong>Type:</strong> ${booking.type}
+        <strong>Type:</strong> ${escapeHtml(booking.type)}
       </p>
 
       <p>
@@ -43,7 +43,7 @@ export class BookingService {
 
       <p>
         <strong>Preferred time:</strong>
-        ${booking.preferredTime}
+        ${escapeHtml(booking.preferredTime)}
       </p>
 
       <p>
@@ -64,11 +64,10 @@ export class BookingService {
 
       <p>A new booking request has been submitted.</p>
 
-      <p><strong>Name:</strong> ${booking.name}</p>
-      <p><strong>Email:</strong> ${booking.email}</p>
-      <p><strong>Phone:</strong> ${booking.phone ?? 'Not provided'}</p>
-      <p><strong>Company:</strong> ${booking.companyName ?? 'Not provided'}</p>
-      <p><strong>Type:</strong> ${booking.type}</p>
+      <p><strong>Name:</strong> ${escapeHtml(booking.name)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(booking.email)}</p>
+      <p><strong>Phone:</strong> ${escapeHtml(booking.phone ?? 'Not provided')}</p>
+      <p><strong>Company:</strong> ${escapeHtml(booking.companyName ?? 'Not provided')}</p>    <p><strong>Type:</strong> ${escapeHtml(booking.type)}</p>
 
       <p>
         <strong>Preferred date:</strong>
@@ -77,12 +76,12 @@ export class BookingService {
 
       <p>
         <strong>Preferred time:</strong>
-        ${booking.preferredTime}
+        ${escapeHtml(booking.preferredTime)}
       </p>
 
       <p>
         <strong>Message:</strong>
-        ${booking.message ?? 'No message provided'}
+        ${escapeHtml(booking.message ?? 'No message provided')}
       </p>
 
       <p>Please log in to the admin dashboard to review this booking.</p>
@@ -144,12 +143,12 @@ export class BookingService {
       `
         <h2>Booking Status Update</h2>
 
-        <p>Hello ${booking.name},</p>
+        <p>Hello ${escapeHtml(booking.name)},</p>
 
-        <p>${message}</p>
+        <p>${escapeHtml(message)}</p>
 
         <p>
-          <strong>Booking type:</strong> ${booking.type}
+          <strong>Booking type:</strong> ${escapeHtml(booking.type)}
         </p>
 
         <p>
@@ -159,11 +158,11 @@ export class BookingService {
 
         <p>
           <strong>Preferred time:</strong>
-          ${booking.preferredTime}
+          ${escapeHtml(booking.preferredTime)}
         </p>
 
         <p>
-          <strong>Status:</strong> ${booking.status}
+          <strong>Status:</strong> ${escapeHtml(booking.status)}
         </p>
 
         <p>Regards,<br />Meridian Freight</p>
