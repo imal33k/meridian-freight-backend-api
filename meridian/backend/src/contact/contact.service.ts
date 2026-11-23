@@ -3,6 +3,7 @@ import { PrismaService } from '../database/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
+import { RequestUser } from '../auth/decorators/current-user.decorator';
 
 @Injectable()
 export class ContactService {
@@ -11,9 +12,9 @@ export class ContactService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  async create(dto: CreateContactDto) {
+  async create(dto: CreateContactDto, user?: RequestUser) {
     const contact = await this.prisma.contactMessages.create({
-      data: dto,
+      ...dto, userId: user?.id,
     });
 
     await this.notifications.sendEmail(

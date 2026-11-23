@@ -284,6 +284,7 @@ model Shipment {
   request   TradeRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
 
   requestReference String             @unique
+  previousStatus   ShipmentStatus?
   trackingEvents   TrackingEvent[]
   documents        ShipmentDocument[]
   items            ShipmentItem[]

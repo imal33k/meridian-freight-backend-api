@@ -5,6 +5,8 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 import { RequestUser } from '../auth/decorators/current-user.decorator';
 import { NotificationsService } from '../notifications/notifications.service';
 
+
+@Injectable()
 export class BookingService {
   constructor(private readonly prisma: PrismaService, private readonly notificationsService: NotificationsService) {}
 

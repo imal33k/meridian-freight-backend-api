@@ -12,19 +12,27 @@ import { STAFF_ROLES } from '../common/roles';
 import { ShipmentQueryDto } from './dto/shipment-query.dto';
 
 // Everything the app needs to render a shipment: owner name, timeline and documents.
-const shipmentInclude = {
+const baseInclude = {
   user: {
     select: {
       id: true,
       email: true,
       firstName: true,
       lastName: true,
-      company: { select: { name: true } },
+      company: { select: { name: true } }},
     },
-  },
   trackingEvents: { orderBy: { timestamp: 'asc' } },
-  documents: { orderBy: { uploadedAt: 'desc' } },
-} satisfies Prisma.ShipmentInclude;
+  } as const;
+
+  const adminInclude = {
+    ...baseInclude, 
+    documents: { orderBy: { uploadedAt: 'desc'}},
+  } satisfies Prisma.ShipmentInclude;
+  const customerInclude  = {
+    ...baseInclude,
+    documents: { where: { restricted:false }, orderBy: { uploadedAt: 'desc'}}
+  } satisfies Prisma.ShipmentInclude;
+
 
 @Injectable()
 export class ShipmentService {
@@ -60,7 +68,7 @@ export class ShipmentService {
         orderBy: { updatedAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
-        include: shipmentInclude,
+        include: customerInclude,
       }),
       this.prisma.shipment.count({ where }),
     ]);
@@ -70,7 +78,7 @@ export class ShipmentService {
   async findMyOne(id: string, userId: string) {
     const shipment = await this.prisma.shipment.findFirst({
       where: { id, userId },
-      include: shipmentInclude,
+      include: customerInclude,
     });
     if (!shipment) throw new NotFoundException('Shipment not found');
     return shipment;
@@ -116,7 +124,7 @@ export class ShipmentService {
             }
           : {}),
       },
-      include: shipmentInclude,
+      include: customerInclude,
     });
   }
 
@@ -131,7 +139,7 @@ export class ShipmentService {
       data: {
         status: ShipmentStatus.CANCELLED,
       },
-      include: shipmentInclude,
+      include: customerInclude,
     });
 
     await tx.trackingEvent.create({
@@ -189,7 +197,7 @@ async findAllForAdmin(query: ShipmentQueryDto) {
       orderBy: { updatedAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
-      include: shipmentInclude,
+      include: customerInclude,
     }),
     this.prisma.shipment.count({ where }),
   ]);
@@ -208,7 +216,7 @@ async findAllForAdmin(query: ShipmentQueryDto) {
   async findOneForAdmin(id: string) {
     const shipment = await this.prisma.shipment.findUnique({
       where: { id },
-      include: shipmentInclude,
+      include: customerInclude,
     });
     if (!shipment) throw new NotFoundException('Shipment not found');
     return shipment;
@@ -286,7 +294,7 @@ async findAllForAdmin(query: ShipmentQueryDto) {
         ...(estimatedDelivery && { estimatedDelivery: new Date(estimatedDelivery) }),
         ...(actualDelivery && { actualDelivery: new Date(actualDelivery) }),
       },
-      include: shipmentInclude,
+      include: customerInclude,
     });
   }
 

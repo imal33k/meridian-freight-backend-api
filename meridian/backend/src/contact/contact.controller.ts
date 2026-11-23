@@ -5,6 +5,7 @@ import { UpdateContactDto } from './dto/update-contact.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorators';
 import { STAFF_ROLES } from '../common/roles';
+import { OptionalCurrentUser, RequestUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('contact')
 export class ContactController {
@@ -13,7 +14,7 @@ export class ContactController {
   // Public: the website contact form.
   @Public()
   @Post()
-  create(@Body() dto: CreateContactDto) {
+  create(@Body() dto: CreateContactDto, @OptionalCurrentUser()user?: RequestUser) {
     return this.contactService.create(dto);
   }
 

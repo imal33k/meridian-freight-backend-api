@@ -23,14 +23,22 @@ export class SupabaseAuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    if (isPublic) return true;
 
     const request = context.switchToHttp().getRequest();
     const authHeader: string | undefined = request.headers.authorization;
 
-    if (!authHeader) {
-      throw new UnauthorizedException('Authentication required');
+    if (isPublic) {
+      if (authHeader) await this.attachUser(request, authHeader).catch(() => undefined);
+        return true;
     }
+
+    if (!authHeader) 
+      throw new UnauthorizedException('Authentication required');
+      await this.attachUser(request, authHeader);
+      return true;
+}
+
+    private async attachUser (request: any, authHeader:string){
 
     const [type, token] = authHeader.split(' ');
     if (type !== 'Bearer' || !token) {
@@ -55,7 +63,5 @@ export class SupabaseAuthGuard implements CanActivate {
       }
       throw err;
     }
-
-    return true;
   }
 }

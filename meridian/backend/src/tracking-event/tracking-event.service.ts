@@ -54,12 +54,13 @@ export class TrackingEventService {
   private validateStatusTransition(
   currentStatus: ShipmentStatus,
   nextStatus: ShipmentStatus,
+  previous?: ShipmentStatus | null,
 ) {
   if (currentStatus === nextStatus) {
     return;
   }
 
-  const allowedTransitions = ALLOWED_STATUS_TRANSITIONS[currentStatus];
+  const allowedTransitions = currentStatus === ShipmentStatus.ON_HOLD ? [...(previous ? [previous] : []), ShipmentStatus.CANCELLED]: ALLOWED_STATUS_TRANSITIONS[currentStatus];
 
   if (!allowedTransitions.includes(nextStatus)) {
     throw new ForbiddenException(
@@ -103,6 +104,7 @@ export class TrackingEventService {
           where: { id: shipment.id },
           data: {
             status: dto.status,
+            previousStatus: dto.status === 'ON_HOLD' ? shipment.status: null,
             ...(dto.status === 'DELIVERED' && { actualDelivery: new Date() }),
           },
         });
