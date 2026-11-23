@@ -61,8 +61,11 @@ export class AuthService {
       .getClient()
       .auth.signInWithPassword({ email: dto.email, password: dto.password });
 
-    if (error || !data.user || !data.session) {
-      throw new UnauthorizedException('Invalid email or password');
+    if (error || !data.user || !data.session) { 
+      console.log('SUPABASE LOGIN ERROR:', error);
+      console.log('SUPABASE LOGIN DATA:', data);
+      throw new UnauthorizedException(
+        error?.message ?? 'Invalid email or password');
     }
 
     // Return the application user (role, name, company) - not the raw Supabase user.

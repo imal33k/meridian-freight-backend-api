@@ -13,6 +13,7 @@ export class SupabaseService {
     if (!url || !key) {
       throw new Error('SUPABASE_URL and SUPABASE_ANON_KEY must be set');
     }
+    
 
     // This client is shared by every request, so it must not keep a login session
     // in memory (one user's sign-in would otherwise leak into the next call).
