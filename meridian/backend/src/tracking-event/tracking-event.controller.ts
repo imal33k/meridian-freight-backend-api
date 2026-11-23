@@ -4,6 +4,7 @@ import { TrackingEventService } from './tracking-event.service';
 import { CreateTrackingEventDto } from './dto/create-tracking-event.dto';
 import { Roles } from '../auth/decorators/roles.decorators';
 import { Public } from '../auth/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('tracking-event')
 export class TrackingEventController {
@@ -19,6 +20,7 @@ export class TrackingEventController {
   }
 
   // Public: powers the "Track a shipment" page.
+  @Throttle({ default: { limit: 5, ttl:60_000}})
   @Public()
   @Get(':trackingNumber')
   getTracking(@Param('trackingNumber') trackingNumber: string) {

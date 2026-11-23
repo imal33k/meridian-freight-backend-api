@@ -229,6 +229,7 @@ async findAllForAdmin(query: ShipmentQueryDto) {
       include: { shipment: true },
     });
     if (!request) throw new NotFoundException('Request not found');
+    if (request.status !== 'ACCEPTED') { throw new ConflictException(' Only accepted request can be turned into shipment')}
     if (request.shipment) throw new ConflictException('This request already has a shipment');
 
     const origin = request.originCity ?? request.originCountry;
@@ -278,7 +279,10 @@ async findAllForAdmin(query: ShipmentQueryDto) {
 
         return this.findOneForAdmin(shipment.id);
       } catch (err) {
-        if (!this.isUniqueClash(err) || attempt === 4) throw err;
+        if (!this.isUniqueClash(err)) throw err ;
+        const taken = await this.prisma.shipment.findUnique({ where: { requestId:request.id}});
+        if (taken) throw new ConflictException('This request already has a shipment')
+          if (attempt === 4 ) throw err;
       }
     }
     throw new Error('unreachable');

@@ -6,12 +6,14 @@ import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorators';
 import { STAFF_ROLES } from '../common/roles';
 import { OptionalCurrentUser, RequestUser } from '../auth/decorators/current-user.decorator';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('contact')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
   // Public: the website contact form.
+  @Throttle({ default: { limit: 5, ttl:60_000}})
   @Public()
   @Post()
   create(@Body() dto: CreateContactDto, @OptionalCurrentUser()user?: RequestUser) {

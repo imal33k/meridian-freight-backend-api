@@ -7,11 +7,14 @@ import { UpdateBookingDto } from './dto/update-booking.dto';
 import { Roles } from '../auth/decorators/roles.decorators';
 import { Public } from '../auth/decorators/public.decorator';
 import {CurrentUser,OptionalCurrentUser,type RequestUser,} from '../auth/decorators/current-user.decorator';
+import { Throttle } from '@nestjs/throttler';
+
 @Controller('booking')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
 
   // Public: the "Book a call" form is open to visitors.
+  @Throttle({ default: { limit: 3, ttl:60_000}})
   @Public()
   @Post()
   create(@Body() dto: CreateBookingDto,

@@ -6,7 +6,6 @@ import {
   IsOptional,
   IsPositive,
   IsString,
-  IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { CreateShipmentItemDto } from '../../shipment-item/dto/create-shipment-item.dto';
@@ -58,7 +57,4 @@ items?: CreateShipmentItemDto[];
   @IsString()
   weightUnit?: string;
 
-  @IsOptional()
-  @IsUUID()
-  requestId?: string;
 }

@@ -8,17 +8,20 @@ import { RefreshDto } from './dto/refresh.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { Roles } from './decorators/roles.decorators';
 import { Public } from './decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler'
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit:5, ttl: 60_000}})
   @Public()
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
 
+  @Throttle({ default: { limit:5, ttl:60_0000}})
   @Public()
   @Post('login')
   login(@Body() dto: LoginDto) {
@@ -38,12 +41,14 @@ export class AuthController {
     return this.authService.logout(authorization.replace(/^Bearer\s+/i, ''));
   }
 
+  @Throttle({ default: { limit: 5, ttl:60_000}})
   @Public()
   @Post('forgot-password')
   forgotPassword(@Body() dto: ForgotPasswordDto) {
     return this.authService.forgotPassword(dto);
   }
 
+  @Throttle({ default: { limit: 5, ttl:60_000}})
   @Public()
   @Post('reset-password')
   resetPassword(@Body() dto: ResetPasswordDto) {

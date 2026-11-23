@@ -12,10 +12,13 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { RequestsModule } from './trade-requests/requests.module';
 import { ContactModule } from './contact/contact.module';
 import { ShipmentItemModule } from './shipment-item/shipment-item.module';
+import { ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
+import { APP_GUARD }from '@nestjs/core';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit:60}]),
     PrismaModule,
     SupabaseModule,
     AuthModule,
@@ -29,5 +32,6 @@ import { ShipmentItemModule } from './shipment-item/shipment-item.module';
     ContactModule,
     ShipmentItemModule,
   ],
+  providers:[{ provide: APP_GUARD, useClass: ThrottlerGuard}]
 })
 export class AppModule {}
