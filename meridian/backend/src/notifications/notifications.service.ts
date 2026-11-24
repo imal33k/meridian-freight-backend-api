@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { NotificationType } from '@prisma/client';
 import { PrismaService } from '../database/prisma.service';
 import { Resend } from 'resend'
@@ -12,24 +12,25 @@ export interface NotifyInput {
 }
 
 @Injectable()
-export class NotificationsService {private readonly resend: Resend;
+export class NotificationsService {private readonly resend: Resend; private readonly logger = new Logger(NotificationsService.name);
   constructor(private readonly prisma: PrismaService) {this.resend = new Resend(process.env.RESEND_API_KEY || '');}
-  async sendEmail(
-  to: string,
-  subject: string,
-  html: string,
-) {
+
+
+
+async sendEmail(to: string, subject: string, html: string) {
   try {
-    const result = await this.resend.emails.send({
+    const { error } = await this.resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL!,
       to,
       subject,
       html,
     });
 
-    return result;
-  } catch (error) {
-    console.error('Failed to send email:', error);
+    if (error) {
+      this.logger.error(`Email to ${to} failed: ${error.message}`);
+    }
+  } catch (err) {
+    this.logger.error('Email send threw', err as Error);
   }
 }
 
@@ -53,26 +54,25 @@ export class NotificationsService {private readonly resend: Resend;
 
     // 3. Send email notification
     try {
-      await this.resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL!,
-        to: user.email,
-        subject: input.title,
-        html: `
-          <h2>${escapeHtml(input.title)}</h2>
+      await this.sendEmail(
+  user.email,
+  input.title,
+  `
+    <h2>${escapeHtml(input.title)}</h2>
 
-          <p>Hello ${escapeHtml(user.firstName)},</p>
+    <p>Hello ${escapeHtml(user.firstName)},</p>
 
-          <p>${escapeHtml(input.message)}</p>
+    <p>${escapeHtml(input.message)}</p>
 
-          ${
-            input.shipmentReference
-              ? `<p><strong>Shipment:</strong> ${escapeHtml(input.shipmentReference)}</p>`
-              : ''
-          }
+    ${
+      input.shipmentReference
+        ? `<p><strong>Shipment:</strong> ${escapeHtml(input.shipmentReference)}</p>`
+        : ''
+    }
 
-          <p>Regards,<br />Meridian Freight</p>
-        `,
-      });
+    <p>Regards,<br />Meridian Freight</p>
+  `,
+);
     } catch (error) {
       console.error('Failed to send notification email:', error);
     }

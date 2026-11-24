@@ -56,7 +56,7 @@ export class BookingService {
   );
 
   // Notify Meridian admin
-  await this.notificationsService.sendEmail(
+  void this.notificationsService.sendEmail(
     process.env.ADMIN_NOTIFICATION_EMAIL!,
     'New booking request',
     `
@@ -137,7 +137,7 @@ export class BookingService {
       statusMessages[status] ??
       `Your booking status has been updated to ${status}.`;
 
-    await this.notificationsService.sendEmail(
+    void this.notificationsService.sendEmail(
       booking.email,
       `Booking ${status.toLowerCase()}`,
       `

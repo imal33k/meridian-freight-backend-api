@@ -42,7 +42,7 @@ export class ContactService {
         <p>Regards,<br />Meridian Freight</p>
       `,
     );
-    await this.notifications.sendEmail(
+    void this.notifications.sendEmail(
   process.env.ADMIN_NOTIFICATION_EMAIL!,
   'New contact message',
   `

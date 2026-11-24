@@ -14,10 +14,31 @@ import { ContactModule } from './contact/contact.module';
 import { ShipmentItemModule } from './shipment-item/shipment-item.module';
 import { ThrottlerGuard, ThrottlerModule} from '@nestjs/throttler';
 import { APP_GUARD }from '@nestjs/core';
+import { SupabaseAuthGuard } from './auth/guards/supabase-auth.guard';
+import { RolesGuard } from './auth/guards/roles.guards.decorators';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ConfigModule.forRoot({
+  isGlobal: true,
+  envFilePath: '.env',
+  validate: (env: Record<string, unknown>) => {
+    const required = [
+      'DATABASE_URL',
+      'SUPABASE_URL',
+      'SUPABASE_SERVICE_ROLE_KEY',
+      'SUPABASE_ANON_KEY',
+      'RESEND_API_KEY',
+      'RESEND_FROM_EMAIL',
+      'ADMIN_NOTIFICATION_EMAIL',
+    ];
+    const missing = required.filter((k) => !env[k]);
+    if (missing.length) {
+      throw new Error(`Missing env vars: ${missing.join(', ')}`);
+    }
+    return env;
+  },
+}),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit:60}]),
     PrismaModule,
     SupabaseModule,
@@ -32,6 +53,6 @@ import { APP_GUARD }from '@nestjs/core';
     ContactModule,
     ShipmentItemModule,
   ],
-  providers:[{ provide: APP_GUARD, useClass: ThrottlerGuard}]
+  providers:[{ provide: APP_GUARD, useClass: ThrottlerGuard}, { provide:APP_GUARD, useClass: SupabaseAuthGuard}, {provide: APP_GUARD, useClass: RolesGuard}]
 })
 export class AppModule {}
